@@ -13,7 +13,7 @@ source:
     - patches/cmake-minimum-3.5.patch
 
 build:
-  number: 0
+  number: 1
   skip:
     - win
     # https://github.com/conda-forge/root-feedstock/issues/327
