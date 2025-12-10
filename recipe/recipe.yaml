@@ -13,23 +13,19 @@ source:
     - patches/cmake-minimum-3.5.patch
 
 build:
-  number: 2
+  number: 3
   skip:
     - win
     # https://github.com/conda-forge/root-feedstock/issues/327
-    - if: osx and (root_base is startingwith('6.32'))
+    - if: linux and (root_base is startingwith('6.32') or root_base is startingwith('6.34')) and (c_compiler_version != "13")
       then: true
-    - if: linux and (root_base is startingwith('6.32') or root_base is startingwith('6.34')) and (c_compiler_version != 13)
-      then: true
-    #- if: root_base is startingwith('6.36') and (c_compiler_version != "14")
-    #  then: true
   script:
     - cmake ${CMAKE_ARGS}  -S . -B build
     - cmake --build build --clean-first --parallel="${CPU_COUNT}"
     - cmake --install build
     # NOTE: we must manually set SP_DIR since it is not set.
     # Can be removed once https://github.com/prefix-dev/rattler-build/issues/1733 is fixed.
-    - if: unix
+    - if: unix or osx
       then:
         - export SP_DIR=$(python -c "import site; print(site.getsitepackages()[0])")
     - if: win
@@ -41,9 +37,9 @@ build:
 
 requirements:
   build:
-    - ${{ compiler('c') }} #c-compiler 1.11.*
-    - ${{ compiler('cxx') }} #cxx-compiler 1.11.*
-    - ${{ stdlib('c') }} #sysroot_linux-64 2.17.*
+    - ${{ compiler('c') }}
+    - ${{ compiler('cxx') }}
+    - ${{ stdlib('c') }}
     - cmake
     - make
     - if: build_platform != target_platform
@@ -59,13 +55,15 @@ requirements:
     - python
 
 tests:
+  - python:
+      imports:
+        - RooUnfold
   - requirements:
       run:
         - root_base
         - python
     script:
       - printenv
-      - python -c "import RooUnfold"
 
 about:
   homepage: https://gitlab.cern.ch/RooUnfold/RooUnfold
